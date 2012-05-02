@@ -1,2 +1,2 @@
 term = require 'node-term'
-term.start 8080, 'root', 'pass123'
+term.start process.env['app_port'] || 8080, 'root', 'pass1234'
