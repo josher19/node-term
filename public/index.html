@@ -1,0 +1,62 @@
+<html>
+  <head>
+    <title>node-term</title>
+    <script src="/socket.io/socket.io.js" type="text/javascript"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <script>
+    $(document).ready(function(){
+      var hist = {
+            ory : []
+          , debug : false
+          , num : 0
+          , push : function(v){ hist.ory.push(v);hist.num=hist.ory.length; }
+          , incr : function() { return hist.num = Math.min(++hist.num, hist.ory.length); }
+          , decr : function() { return hist.num = Math.max(--hist.num, 0); }
+      };
+      var socket = io.connect(window.location.hostname);
+      var cwd = "~";
+      var append = function (data) {
+        $("#output").append(data + "\n");
+        $("#output").scrollTop($("#output")[0].scrollHeight);
+      }
+      append("### node-term ###");
+      append("Type 'breakout' to escape chroot jail");
+      append("Type 'breakin' to return to chroot jail");
+      socket.on('stdout', append);
+      socket.on('stderr', append);
+      socket.on('error', append);
+      socket.on('cwd', function(data){
+        cwd = data;
+      });
+      
+      $('#cli').bind('keydown', function (e){
+        var key = e.keyCode || e.which;
+        if (38 === key) { // up
+            $('#cli').val(hist.ory[hist.decr()] || '');
+            if (hist.debug && typeof console === "object") console.log("keypress : up", key, e);
+        } else if (40 === key) { // down
+            $('#cli').val(hist.ory[hist.incr()] || '');
+            if (hist.debug && typeof console === "object") console.log("keypress : down", key, e);
+        }
+      });
+
+      $('#cli').bind('keypress', function (e) {
+        var key = e.keyCode || e.which;
+        if (key == 13){
+          var value = $("#cli").attr('value');
+          append("r00t@node:" + cwd + "$ " + value);
+          socket.emit('command', value);
+          hist.push(value);
+          if (typeof console === "object") console.log("keypress : enter", value, key, e);
+          $("#cli").val('');
+        }
+      });
+      $('#cli').focus();
+    });
+    </script>
+  </head>
+  <body bgcolor="black">
+    <textarea id="output" readonly="true" style="background:black;width:100%;height:90%;color:white;border-color:green;"></textarea><br/><br/>
+    <input type="text" id="cli" style="background:black;width:100%;color:cyan;border-color:green;">
+  </body>
+</html>

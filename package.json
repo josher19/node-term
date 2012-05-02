@@ -7,6 +7,8 @@
    "homepage":"http://github.com/wearefractal/node-term",
 
    "main":"./lib/main.js",
+
+   "watch": "coffee -co lib src",
    
    "dependencies":{
       "coffee-script":"*",
