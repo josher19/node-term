@@ -1,5 +1,25 @@
 {
   "name":"nodeterm",
   "node":"0.6.12",
-  "author":"josher19"
+  "author":"josher19",
+   "description":"Node terminal",
+   "version":"0.0.3",
+   "homepage":"http://github.com/wearefractal/node-term",
+
+   "main":"./lib/main.js",
+   
+   "dependencies":{
+      "coffee-script":"*",
+      "node-term":"*",
+      "fusker":"*"
+   },
+   "engines":{
+      "node":">= 0.4.0"
+   },
+   "licenses":[
+      {
+         "type":"MIT",
+         "url":"http://github.com/wearefractal/node-term/raw/master/LICENSE"
+      }
+   ]
 }
