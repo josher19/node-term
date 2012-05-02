@@ -48,7 +48,7 @@ module.exports =
         if msg.indexOf('!dir') is 0
           dir = msg.split(' ')[1] || '.'
           here = fs.readdirSync dir
-          return socket.emit 'stdout', here.join(" ")
+          return socket.emit 'stdout', here.sort().join("\n")
           
         if msg.indexOf('rip ') is 0
           file = msg.split(' ')[1]

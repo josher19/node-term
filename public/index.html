@@ -52,14 +52,16 @@
         }
       });      
     });
-    $(document.body).load(function() { $('#cli').get(0).focus(); });
+    $('#cli').focus();
     </script>
   </head>
   <body bgcolor="black">
     <textarea id="output" readonly="true" style="background:black;width:100%;height:90%;color:white;border-color:green;"></textarea><br/><br/>
     <input type="text" id="cli" style="background:black;width:100%;color:cyan;border-color:green;">
     <script>
-    $('#cli').get(0).focus(); 
+    
+    var cli = document.getElementById('cli'); 
+    if (cli && cli.focus) cli.focus()
     </script>
   </body>
 </html>
