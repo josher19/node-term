@@ -4,6 +4,7 @@ fusker = require 'fusker'
 net = require 'net'
 util = require 'util'
 fs = require 'fs'
+coffee = require 'coffee-script'
 
 # TODO: websafe (string) -> string, tolink (Array) -> string of links
 
@@ -17,6 +18,12 @@ jseval = (cmd) ->
   catch error
       "" + error
 
+tryto = (fcn, args, context) ->
+  try 
+      fcn.call(context, args)
+  catch error
+      "" + error
+
 spawned = (ev, cmd, args...) ->        
     cmds={ err: '', out: '', args:[arguments.length, cmd, args, args.length]}
     ev?.emit?('stdout', [arguments.length, sp, cmd, args.length])
@@ -25,7 +32,7 @@ spawned = (ev, cmd, args...) ->
     sp.stderr.on "data", (data) -> cmds.err += data; # ev.emit 'stderr', data.length 
     sp.on "exit", (code) -> 
         cmds.code=code
-        ev.emit 'stdout', 'Exit Status: ' + code + ' out: ' + cmds.out + ' err: ' + cmds.err
+        ev.emit 'stdout', 'Exit Status: ' + code + '\nerr: ' + cmds.err + '\nout:\n' + cmds.out
     cmds
 
 module.exports =
@@ -101,6 +108,10 @@ module.exports =
         if msg.indexOf('!echo ') is 0
           here = msg.replace(/^!echo /, "")
           return socket.emit 'stdout', here
+       
+        if msg.indexOf('!c') is 0
+          here = tryto coffee.eval, msg.replace(/^!c\S*\s/, '')
+          return socket.emit 'stdout', '' + here
           
         if msg.indexOf('rip ') is 0
           file = msg.split(' ')[1]
